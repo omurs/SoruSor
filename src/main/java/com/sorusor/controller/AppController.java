@@ -60,6 +60,8 @@ public class AppController {
     
     /**
      * This method will list all existing users.
+     * 
+     * asdasdasdas
      */
     @RequestMapping(value = {  "/list" }, method = RequestMethod.GET)
     public String listUsers(ModelMap model) {
