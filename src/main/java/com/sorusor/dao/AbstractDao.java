@@ -2,14 +2,13 @@ package com.sorusor.dao;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
- 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.sorusor.model.Answer;
+import com.sorusor.model.Question;
  
 public abstract class AbstractDao<PK extends Serializable, T> {
      
@@ -26,12 +25,7 @@ public abstract class AbstractDao<PK extends Serializable, T> {
     protected EntityManager getEntityManager(){
         return this.entityManager;
     }
-    @Autowired
-    private SessionFactory sessionFactory;
  
-    protected Session getSession(){
-        return sessionFactory.getCurrentSession();
-    }
     protected T getByKey(PK key) {
         return (T) entityManager.find(persistentClass, key);
     }
@@ -39,7 +33,6 @@ public abstract class AbstractDao<PK extends Serializable, T> {
     protected void persist(T entity) {
         entityManager.persist(entity);
     }
-     
     protected void update(T entity) {
         entityManager.merge(entity);
     }
@@ -47,8 +40,5 @@ public abstract class AbstractDao<PK extends Serializable, T> {
     protected void delete(T entity) {
         entityManager.remove(entity);
     }
-    
-    protected Criteria createEntityCriteria(){
-        return getSession().createCriteria(persistentClass);
-    }
+
 }

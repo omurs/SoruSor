@@ -24,10 +24,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
+import com.sorusor.model.Answer;
 import com.sorusor.model.Question;
 import com.sorusor.model.Subject;
 import com.sorusor.model.User;
 import com.sorusor.model.UserProfile;
+import com.sorusor.service.AnswerService;
 import com.sorusor.service.QuestionService;
 import com.sorusor.service.SubjectService;
 import com.sorusor.service.UserProfileService;
@@ -48,16 +50,19 @@ public class AppController {
     @Autowired
     QuestionService questionService; 
     @Autowired
+    AnswerService answerService; 
+    @Autowired
     SubjectService subjectService; 
     @Autowired
     MessageSource messageSource;
 
-    @Autowired
-    AuthenticationTrustResolver authenticationTrustResolver;
+   
     
     @Autowired
     PersistentTokenBasedRememberMeServices persistentTokenBasedRememberMeServices;
     
+    @Autowired
+    AuthenticationTrustResolver authenticationTrustResolver;
     /**
      * This method will list all existing users.
      */
@@ -71,7 +76,7 @@ public class AppController {
     }
     
     /**
-     * This method will provide the medium to add a new user.
+     * This method will provide the medium to ask a question
      */
     @RequestMapping(value = { "/","/listQuestions" }, method = RequestMethod.GET)
     public String questionList(ModelMap model) {
@@ -118,11 +123,12 @@ public class AppController {
     }
     
     /**
-     * This method will provide the medium to add a new user.
+     * This method will provide the medium to ask a new question.
      */
     @RequestMapping(value = { "/newquestion" }, method = RequestMethod.GET)
     public String newQuestion(ModelMap model) {
        Question question = new Question();
+       question.setUser((User) model.get("user"));
         model.addAttribute("question", question);
         model.addAttribute("edit", false);
         return "askquestion";
@@ -134,9 +140,10 @@ public class AppController {
      */
     @RequestMapping(value = { "/newquestion" }, method = RequestMethod.POST)
     public String saveQuestion(@Valid Question question, BindingResult result,
-            ModelMap model) {UserService us = new UserServiceImpl();
-    	User user = userService.findById(3);
-    	question.setUser(user);
+            ModelMap model) {
+//    	UserService us = new UserServiceImpl();
+//    	User user = userService.findById(3);
+//    	question.setUser(user);
         if (result.hasErrors()) {
             return "askquestion";
         }
@@ -145,7 +152,34 @@ public class AppController {
         //return "success";
         return "askquestionsuccess";
     }
- 
+    /**
+     * This method will provide the medium to answer a question.
+     */
+    @RequestMapping(value = { "/answer-question-{id}" }, method = RequestMethod.GET)
+    public String answerQuestion(@PathVariable int id,ModelMap model) {
+       Answer answer = new Answer();
+       Question question = questionService.findById(id);
+       answer.setQuestion(question);
+       model.addAttribute("answers", answerService.findByQuestion(question));
+       model.addAttribute("question", question);
+        model.addAttribute("answer", answer);
+        model.addAttribute("edit", false);
+        return "answer";
+    }
+    
+    
+    @RequestMapping(value = { "/answer-question-{id}" }, method = RequestMethod.POST)
+    public String saveAnswer(@Valid Answer answer, @PathVariable int id,BindingResult result,
+            ModelMap model) {
+    	answer.setQuestion((Question)model.get("question"));
+        if (result.hasErrors()) {
+            return "answerQuestion";
+        }
+        answerService.saveAnswer(answer);
+        model.addAttribute("success", "Answer saved successfully");
+        //return "success";
+        return "askquestionsuccess";
+    }
     /**
      * This method will provide the medium to update an existing user.
      */
@@ -241,7 +275,7 @@ public class AppController {
     public String logoutPage (HttpServletRequest request, HttpServletResponse response){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null){    
-            //new SecurityContextLogoutHandler().logout(request, response, auth);
+          //  new SecurityContextLogoutHandler().logout(request, response, auth);
             persistentTokenBasedRememberMeServices.logout(request, response, auth);
             SecurityContextHolder.getContext().setAuthentication(null);
         }

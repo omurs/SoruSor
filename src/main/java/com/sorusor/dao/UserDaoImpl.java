@@ -3,9 +3,9 @@ package com.sorusor.dao;
 
 import java.util.Collection;
 import java.util.List;
- 
+
 import javax.persistence.NoResultException;
- 
+
 import org.springframework.stereotype.Repository;
 
 import com.sorusor.model.User;
